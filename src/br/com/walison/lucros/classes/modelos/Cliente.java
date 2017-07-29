@@ -2,6 +2,7 @@ package br.com.walison.lucros.classes.modelos;
 
 import br.com.walison.lucros.classes.Conexao;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -59,10 +60,12 @@ public class Cliente {
         this.rua = rua;
 
         Connection conexao = new Conexao().getConexao();
-        ResultSet rs = conexao.createStatement().executeQuery("SELECT * FROM contas WHERE cod_con = " + cod_con + ";");
+        PreparedStatement stmt = conexao.prepareStatement("SELECT * FROM contas WHERE cod_con = ?;");
+        stmt.setShort(1, cod_con);
+        ResultSet rs = stmt.executeQuery();
         
         if(rs.next()){
-            Conta conta = new Conta(Short.parseShort(rs.getString(1)), Float.parseFloat(rs.getString(3)), Float.parseFloat(rs.getString(4)), rs.getString(5), Boolean.parseBoolean(rs.getString(6)));
+            Conta conta = new Conta(rs.getShort(1), rs.getFloat(3), rs.getFloat(4), rs.getString(5), rs.getBoolean(6), rs.getBoolean(7));
             this.setConta(conta);
         }
         

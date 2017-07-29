@@ -15,15 +15,17 @@ public class Conta {
     private float div_con;
     private String dt_pag;
     private boolean pagou;
+    private boolean atraso;
     private LinkedList<Venda> compras;
     
-    public Conta(short cod_con, float lim_con, float div_con, String dt_pag, boolean pagou){
+    public Conta(short cod_con, float lim_con, float div_con, String dt_pag, boolean pagou, boolean atraso){
         this.cod_con = cod_con;
         this.sal_con = lim_con - div_con;
         this.lim_con = lim_con;
         this.div_con = div_con;
         this.dt_pag = dt_pag;
         this.pagou = pagou;
+        this.atraso = atraso;
         this.compras = null; // NULO POR ENQUANTO LOGO LOGO VOU PREENCHELO
     }
 
@@ -76,4 +78,32 @@ public class Conta {
     public void setPagou(boolean pagou) {
         this.pagou = pagou;
     }  
+
+    /**
+     * @return the atraso
+     */
+    public boolean isAtraso() {
+        return atraso;
+    }
+
+    /**
+     * @param atraso the atraso to set
+     */
+    public void setAtraso(boolean atraso) {
+        this.atraso = atraso;
+    }
+
+    /**
+     * @return the compras
+     */
+    public LinkedList<Venda> getCompras() {
+        return compras;
+    }
+
+    /**
+     * @param compras the compras to set
+     */
+    public void setCompras(LinkedList<Venda> compras) {
+        this.compras = compras;
+    }
 }

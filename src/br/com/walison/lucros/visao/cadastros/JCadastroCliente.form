@@ -298,7 +298,6 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Cantarell" size="18" style="0"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="SANTO ANT&#xd4;NIO"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cConjCadCliActionPerformed"/>
@@ -396,7 +395,6 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Cantarell" size="18" style="0"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="CIDADE NOVA"/>
       </Properties>
       <Events>
         <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="cBaiCadCliKeyPressed"/>

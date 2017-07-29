@@ -164,7 +164,6 @@ public class JCadastroCliente extends javax.swing.JPanel {
         });
 
         cConjCadCli.setFont(new java.awt.Font("Cantarell", 0, 18)); // NOI18N
-        cConjCadCli.setText("SANTO ANTÔNIO");
         cConjCadCli.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cConjCadCliActionPerformed(evt);
@@ -228,7 +227,6 @@ public class JCadastroCliente extends javax.swing.JPanel {
         lCidCadCli.setText("CIDADE:");
 
         cBaiCadCli.setFont(new java.awt.Font("Cantarell", 0, 18)); // NOI18N
-        cBaiCadCli.setText("CIDADE NOVA");
         cBaiCadCli.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 cBaiCadCliKeyPressed(evt);
