@@ -76,9 +76,9 @@ public class Sistema {
         return produtos;
     }
     
-    public TreeMap<Integer, Produto> BuscarProdutosArvore() throws SQLException{
-        TreeMap<Integer, Produto> produtos = new TreeMap<>();
-        String sql = "SELECT * FROM produtos ORDER BY nom_prod;";
+    public TreeMap<String, Produto> BuscarProdutosArvore() throws SQLException{
+        TreeMap<String, Produto> produtos = new TreeMap<>();
+        String sql = "SELECT * FROM produtos WHERE qtd_estoque >= 1 ORDER BY nom_prod;";
 
         Connection conexao = new Conexao().getConexao();
         ResultSet r = conexao.createStatement().executeQuery(sql);
@@ -101,7 +101,7 @@ public class Sistema {
                 r.getBoolean(8),
                 r.getShort(9)
             );
-            produtos.put(produto.getCod_prod(), produto);
+            produtos.put(produto.getCod_bar_prod(), produto);
         } 
         r.close();
         conexao.close();

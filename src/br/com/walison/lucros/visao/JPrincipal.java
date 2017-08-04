@@ -19,6 +19,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.Normalizer;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -505,12 +508,12 @@ public class JPrincipal extends javax.swing.JPanel {
                     qtd = c.getQtd_prod();
             }
             
-            short qtd_estoque = (short) (this.produtos.get(produto.getCod_prod()).getQtd_estoque() - qtd);
+            short qtd_estoque = (short) (this.getProdutos().get(produto.getCod_prod()).getQtd_estoque() - qtd);
            
             this.getVenda().removerCompra(produto);
             
             try {
-                this.produtos.get(produto.getCod_prod()).setQtd_estoque(qtd_estoque);
+                this.getProdutos().get(produto.getCod_prod()).setQtd_estoque(qtd_estoque);
             } catch (Exception ex) {
                 new Mensagem().msg("Não foi possivel remover o produto!!");
             }
@@ -539,7 +542,7 @@ public class JPrincipal extends javax.swing.JPanel {
             if(produto.getQtd_estoque() > 0){
                 Subtotal compra = new Subtotal(produto, qtde, produto.getVl_prod());
                 short qtd_estoque = compra.getProduto().getQtd_estoque();
-                this.produtos.get(compra.getProduto().getCod_prod()).setQtd_estoque((short) (qtd_estoque - qtde));
+                this.getProdutos().get(compra.getProduto().getCod_prod()).setQtd_estoque((short) (qtd_estoque - qtde));
                 this.adicionarCompraNaVenda(compra, qtde);
             }
             
@@ -691,98 +694,77 @@ public class JPrincipal extends javax.swing.JPanel {
     private FormatoNumerico din;
     private Venda venda;
     private Cliente cliente;
-    private TreeMap<Integer, Produto> produtos;
+    private TreeMap<String, Produto> produtos;
     
     private boolean buscarProdutoPorCodigo() throws SQLException, EstoqueInsuficienteException{
-        Connection conexao = new Conexao().getConexao();
+        Produto produto = this.produtos.get(this.getcPesquisa().getText().trim());
+        short quantidadeProduto = this.quantidadeDeProdutos(produto);
 
-        try {
-            try{
-                PreparedStatement stmt = conexao.prepareStatement("SELECT * FROM produtos WHERE cod_bar_prod = ? AND qtd_estoque >= 1 LIMIT 1;");
-                stmt.setString(1, this.getcPesquisa().getText().trim());
-                ResultSet rs = stmt.executeQuery();
+        if(quantidadeProduto > 0){
+            Subtotal compra =  new Subtotal(produto, quantidadeProduto, produto.getVl_prod());
+            short qtd = (short) (this.getProdutos().get(compra.getProduto().getCod_bar_prod()).getQtd_estoque() - quantidadeProduto);
+            this.getProdutos().get(compra.getProduto().getCod_bar_prod()).setQtd_estoque(qtd);
+            this.lUltimoAdicionado.setText(compra.getProduto().toString());
+            this.adicionarCompraNaVenda(compra, quantidadeProduto);
+            this.cPesquisa.requestFocus();
+        }
 
-                if(!rs.isBeforeFirst()){
-                    rs.close();
-                    conexao.close();
-                    new Mensagem().msg("Produto não cadastrado ou com estoque vazio!!");
-                    return false;
-                }
-                
-                if(rs.next()){  
-                    Produto produto = this.montaProduto(rs);
-                    short quantidadeProduto = this.quantidadeDeProdutos(produto);
-                    
-                    if(quantidadeProduto > 0){
-                        Subtotal compra =  new Subtotal(produto, quantidadeProduto, produto.getVl_prod());
-                        short qtd = (short) (this.produtos.get(compra.getProduto().getCod_prod()).getQtd_estoque() - quantidadeProduto);
-                        this.produtos.get(compra.getProduto().getCod_prod()).setQtd_estoque(qtd);
-                        this.lUltimoAdicionado.setText(compra.getProduto().toString());
-                        this.adicionarCompraNaVenda(compra, quantidadeProduto);
-                    }
-                }
-                
-                conexao.close();
-                this.cPesquisa.requestFocus();
-            }catch (com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException e){ 
-                conexao.close();
-                this.buscaProdutoPorNome();
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(JPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        if(produto == null){
+            this.buscaProdutoPorNome();
+        }
         return true;
     }
     
     public boolean buscaProdutoPorNome() throws SQLException{
-        String sql = "select * from produtos where nom_prod LIKE  '%" + this.cPesquisa.getText().trim() + "%' and qtd_estoque > 0;";
-
         DefaultTableModel modeloTable = (DefaultTableModel) this.tabelaProd.getModel();
-        Connection conexao = new Conexao().getConexao();
-        
-        ResultSet rs = conexao.createStatement().executeQuery(sql);
-                
-        if(!rs.isBeforeFirst()){
-            rs.close();
-            conexao.close();
-            return false;
-        }
-     
+
+        Collection<Produto> values = this.getProdutos().values();
+        String nome = this.cPesquisa.getText().trim();         
         modeloTable.setNumRows(0);
-       
-        while(rs.next()){
-            Produto produto = new Produto(Short.parseShort(rs.getString(1)), rs.getString(2), rs.getString(3), Float.parseFloat(rs.getString(4)),  rs.getString(5), rs.getBoolean(6), rs.getString(7), rs.getBoolean(8), rs.getShort(9));          
-            Object linha[] = { produto };
-            modeloTable.addRow(linha);
+        
+        for(Iterator i = values.iterator(); i.hasNext();){
+            Produto p = (Produto) i.next();
+                                   
+            if(p.getNom_prod().length() >= nome.length() && p.getNom_prod().substring(0, nome.length()).equalsIgnoreCase(nome)){
+                Object linha[] = { p };
+                modeloTable.addRow(linha);
+            }
         }
-        rs.close();
-        conexao.close();
         return true;
     }
     
+    
+    
     public boolean buscaCliente() throws SQLException{
-        String sql = "SELECT * FROM clientes WHERE nom_cli LIKE '%" + this.getcPesquisaCliente().getText() + "%' ORDER BY nom_cli;";
-        DefaultTableModel modeloTable = (DefaultTableModel) this.getTabelaCli().getModel();
-        Connection conexao = new Conexao().getConexao();
+        Connection conexao = null;
+        ResultSet rs = null;
         
-        ResultSet rs = conexao.createStatement().executeQuery(sql);
-                
-        if(!rs.isBeforeFirst()){
+        try{
+            DefaultTableModel modeloTable = (DefaultTableModel) this.getTabelaCli().getModel();
+            conexao = new Conexao().getConexao();
+            PreparedStatement stmt = conexao.prepareStatement("SELECT * FROM clientes WHERE nom_cli LIKE ? ORDER BY nom_cli;");
+            stmt.setString(1, "%"+this.getcPesquisaCliente().getText()+"%");
+            rs = stmt.executeQuery();
+
+            if(!rs.isBeforeFirst()){
+                rs.close();
+                conexao.close();
+                return false;
+            }
+
+            modeloTable.setNumRows(0);
+
+            while(rs.next()){
+                Cliente cliente = new Cliente(Short.parseShort(rs.getString(1)), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5) , Short.parseShort(rs.getString(6)), rs.getString(7), Short.parseShort(rs.getString(8)), rs.getString(9), rs.getString(10), rs.getString(11), rs.getString(12), rs.getString(13));
+                Object linha[] = { cliente };
+                modeloTable.addRow(linha);
+            }
+        }catch(SQLException e){
+            new Mensagem().msg("Cliente não encontrado!!");
+        }finally{
             rs.close();
             conexao.close();
-            return false;
         }
-        
-        modeloTable.setNumRows(0);
-        
-        while(rs.next()){
-            Cliente cliente = new Cliente(Short.parseShort(rs.getString(1)), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5) , Short.parseShort(rs.getString(6)), rs.getString(7), Short.parseShort(rs.getString(8)), rs.getString(9), rs.getString(10), rs.getString(11), rs.getString(12), rs.getString(13));
-            Object linha[] = { cliente };
-            modeloTable.addRow(linha);
-        }
-        
-        rs.close();
-        conexao.close();
         return true;
     }
     
@@ -846,7 +828,6 @@ public class JPrincipal extends javax.swing.JPanel {
         }
     }
 
-  
     private float clienteEVazio() {
         if(this.cliente == null){
             String valorR = JOptionPane.showInputDialog(null, "Valor Recebido!");
@@ -948,12 +929,12 @@ public class JPrincipal extends javax.swing.JPanel {
                 if(produto.isUnidade()){
                     qtdeP = JOptionPane.showInputDialog(null, "Quantidade \n" + produto + "\n" + din.din(produto.getVl_prod()), "Quantidade", HEIGHT);
                    
-                    if(qtdeP.equals("") && this.produtos.get(produto.getCod_prod()).getQtd_estoque() > 0){
+                    if(qtdeP.equals("") && this.getProdutos().get(produto.getCod_bar_prod()).getQtd_estoque() > 0){
                         return 1;
                     }else{
                         short qtde = Short.parseShort(qtdeP);
                                                 
-                        if(qtde > this.produtos.get(produto.getCod_prod()).getQtd_estoque()) 
+                        if(qtde > this.getProdutos().get(produto.getCod_bar_prod()).getQtd_estoque()) 
                             throw new EstoqueInsuficienteException();
                         else
                             return qtde;
@@ -974,7 +955,7 @@ public class JPrincipal extends javax.swing.JPanel {
                 if(produto.getQtd_estoque() == 0)
                     JOptionPane.showMessageDialog(null, "Não temos esse produto em estoque!!");
                 else
-                    JOptionPane.showMessageDialog(null, "Só tem " + this.produtos.get(produto.getCod_prod()).getQtd_estoque() + " unidades em estoque!!");
+                    JOptionPane.showMessageDialog(null, "Só tem " + this.getProdutos().get(produto.getCod_bar_prod()).getQtd_estoque() + " unidades em estoque!!");
                 
                 return -1;
             }
@@ -1167,14 +1148,14 @@ public class JPrincipal extends javax.swing.JPanel {
     /**
      * @return the produtos
      */
-    public TreeMap<Integer, Produto> getProdutos() {
+    public TreeMap<String, Produto> getProdutos() {
         return produtos;
     }
 
     /**
      * @param produtos the produtos to set
      */
-    public void setProdutos(TreeMap<Integer, Produto> produtos) {
+    public void setProdutos(TreeMap<String, Produto> produtos) {
         this.produtos = produtos;
     }
 }

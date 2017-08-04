@@ -97,8 +97,8 @@ public class Menu extends JMenuBar{
         
         sobre.addMouseListener(new MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Lucros 2017.1.1 é um software gerenciador de comercio "
-                + "desenvilvido por \nWalison Cecílio.", "Sobre", 1, null);
+                JOptionPane.showMessageDialog(null, "Lucros 2017 é um software gerenciador de comercio "
+                + "desenvolvido por \nWalison Cecílio e João Rabelo.", "Sobre", 1, null);
             }
         });       
     }
@@ -135,7 +135,6 @@ public class Menu extends JMenuBar{
                 Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
     }
     
     private class ListarCliente implements ActionListener {

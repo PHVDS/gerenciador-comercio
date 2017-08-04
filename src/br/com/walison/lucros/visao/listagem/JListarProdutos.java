@@ -192,6 +192,8 @@ public class JListarProdutos extends javax.swing.JPanel {
 
     private void bVoltarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bVoltarMouseClicked
         try {
+            this.produtos = null;
+            this.tabela = null;
             this.getJ().voltar();
         } catch (SQLException ex) {
             Logger.getLogger(JListarProdutos.class.getName()).log(Level.SEVERE, null, ex);

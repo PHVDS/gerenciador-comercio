@@ -35,7 +35,6 @@ public class Janela extends JFrame {
     }
     
     public void voltar() throws SQLException{
-        Tela t = new Tela();
         Janela j = new Janela();
         JPrincipal a = new JPrincipal();
         a.setJ(j);
@@ -47,7 +46,6 @@ public class Janela extends JFrame {
         j.add(j.getPanel());
         menu.setJanelaFechar(j);
         this.dispose();
-
     }
 
     /**
